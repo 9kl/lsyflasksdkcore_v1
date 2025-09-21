@@ -1,10 +1,10 @@
-from .cvs import CvsResponse
+from .csv import CsvResponse
 from .xls import XlsResponse
 
-cvs = CvsResponse()
+csv = CsvResponse()
 xls = XlsResponse()
 
 
 def init_excel(app):
-    cvs.init_app(app)
+    csv.init_app(app)
     xls.init_app(app)

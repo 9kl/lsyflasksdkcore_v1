@@ -20,14 +20,14 @@ from lsyflasksdkcore_v1.schema import Schema
 
 def _get_content_style():
     style = xlwt.easyxf(
-        'font: bold 0, colour_index 0; align: wrap on, vert center, horz general; border: left thin,'
-        ' right thin, top thin, bottom thin')
+        "font: bold 0, colour_index 0; align: wrap on, vert center, horz general; border: left thin,"
+        " right thin, top thin, bottom thin"
+    )
     return style
 
 
 def _get_title_style():
-    style = xlwt.easyxf(
-        'font: bold 1, colour_index 0, height 350; align: wrap on, vert center, horz center')
+    style = xlwt.easyxf("font: bold 1, colour_index 0, height 350; align: wrap on, vert center, horz center")
     return style
 
 
@@ -39,7 +39,7 @@ def export_xls(output_file_name, head_cols, data_rows):
     :param data_rows: 数据行
     :return:
     """
-    encoding = 'utf-8'
+    encoding = "utf-8"
 
     book = xlwt.Workbook(encoding=encoding)
     sheet = book.add_sheet(output_file_name)
@@ -85,7 +85,7 @@ def export_xls(output_file_name, head_cols, data_rows):
 
     resp = make_response(output.getvalue())
     resp.headers["Content-Disposition"] = "attachment; filename=testing.xls"
-    resp.headers['Content-Type'] = 'application/x-xls'
+    resp.headers["Content-Type"] = "application/x-xls"
     return resp
 
 
@@ -102,9 +102,9 @@ def export_temp_xls(out_filename, temp_filename, data, start_row=2, start_col=0,
     """
     try:
         config = current_app.config
-        excel_template_path = config.get('EXCEL_TEMPLATE_PATH')
+        excel_template_path = config.get("EXCEL_TEMPLATE_PATH")
 
-        path = os.path.join(excel_template_path, temp_filename).replace('\\', '/').replace('//', '/')
+        path = os.path.join(excel_template_path, temp_filename).replace("\\", "/").replace("//", "/")
         rb = xlrd.open_workbook(path, formatting_info=True)
         wb = copy(rb)
 
@@ -117,17 +117,17 @@ def export_temp_xls(out_filename, temp_filename, data, start_row=2, start_col=0,
             for rowx, row in enumerate(data):
                 for colx, value in enumerate(row):
                     if isinstance(value, datetime.datetime):
-                        style.num_format_str = 'yyyy-mm-dd hh:mm:ss'
+                        style.num_format_str = "yyyy-mm-dd hh:mm:ss"
                     elif isinstance(value, datetime.date):
-                        style.num_format_str = 'yyyy-mm-dd'
+                        style.num_format_str = "yyyy-mm-dd"
                     elif isinstance(value, datetime.time):
-                        style.num_format_str = 'hh:mm:ss'
+                        style.num_format_str = "hh:mm:ss"
                     elif isinstance(value, float):
-                        style.num_format_str = '#,##0.00'
+                        style.num_format_str = "#,##0.00"
                     elif isinstance(value, int):
-                        style.num_format_str = '0'
+                        style.num_format_str = "0"
                     else:
-                        style.num_format_str = u'General'
+                        style.num_format_str = "General"
                     w_sheet.write(start_row + rowx, start_col + colx, value, style)
 
         output = io.BytesIO()
@@ -136,7 +136,7 @@ def export_temp_xls(out_filename, temp_filename, data, start_row=2, start_col=0,
 
         resp = make_response(output.getvalue())
         resp.headers["Content-Disposition"] = "attachment; filename=testing.xls"
-        resp.headers['Content-Type'] = 'application/x-xls'
+        resp.headers["Content-Type"] = "application/x-xls"
         return resp
     except Exception as ex:
         raise ExcelExportError(ex)
@@ -151,14 +151,20 @@ def excelresponse(schema_class: Type[Schema], to_excel: Callable):
         @functools.wraps(fn)
         def __excelresponse(*args, **kwargs):
             response = fn(*args, **kwargs)
-            if request.content_type == 'application/excel':
+            if request.content_type == "application/excel":
                 try:
-                    lst = response.json.get('data', None)
+                    lst = response.json.get("data", None)
                     schema: Schema = schema_class()
                     fields = schema.fields
 
-                    columns = [(name, field.metadata.get("excel_colx", None),) for name, field in fields.items() if
-                               field.metadata.get("excel_colx", None) is not None]
+                    columns = [
+                        (
+                            name,
+                            field.metadata.get("excel_colx", None),
+                        )
+                        for name, field in fields.items()
+                        if field.metadata.get("excel_colx", None) is not None
+                    ]
                     columns.sort(key=lambda x: int(x[1]))
                     rows = [[item.get(col[0], None) for col in columns] for item in lst]
                     return to_excel(rows)
@@ -171,22 +177,22 @@ def excelresponse(schema_class: Type[Schema], to_excel: Callable):
     return _excelresponse
 
 
-def cvsresponse(output_filename):
-    def _cvsresponse(fn):
+def csvresponse(output_filename):
+    def _csvresponse(fn):
         @functools.wraps(fn)
-        def __cvsresponse(*args, **kwargs):
+        def __csvresponse(*args, **kwargs):
             response = fn(*args, **kwargs)
-            if request.content_type == 'application/excel':
-                lst = response.json.get('data', None)
+            if request.content_type == "application/excel":
+                lst = response.json.get("data", None)
                 query = json.loads(request.data)
                 body = query.get("body", {})
-                columns = body.get('excelFields', None)
+                columns = body.get("excelFields", None)
 
                 headers = []
                 keys = []
                 for item in columns:
-                    headers.append(item['title'])
-                    keys.append(item['key'])
+                    headers.append(item["title"])
+                    keys.append(item["key"])
 
                 rows = []
                 for item in lst:
@@ -196,6 +202,6 @@ def cvsresponse(output_filename):
 
             return response
 
-        return __cvsresponse
+        return __csvresponse
 
-    return _cvsresponse
+    return _csvresponse

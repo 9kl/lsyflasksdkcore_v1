@@ -15,7 +15,7 @@ def export_xls(output_file_name, head_cols, data_rows):
     :param data_rows: 数据行
     :return:
     """
-    encoding = 'utf-8'
+    encoding = "utf-8"
 
     book = xlwt.Workbook(encoding=encoding)
     sheet = book.add_sheet(output_file_name)
@@ -52,11 +52,11 @@ def export_xls(output_file_name, head_cols, data_rows):
 
     resp = make_response(output.getvalue())
     resp.headers["Content-Disposition"] = "attachment; filename=testing.xls"
-    resp.headers['Content-Type'] = 'application/x-xls'
+    resp.headers["Content-Type"] = "application/x-xls"
     return resp
 
 
-class CvsResponse(object):
+class CsvResponse(object):
     def __init__(self, app=None):
         self.app = app
         if app is not None:
@@ -67,21 +67,21 @@ class CvsResponse(object):
             self.app = app
 
     def response(self, output_filename: str, row_hander: typing.Callable = None):
-        def _cvsresponse(fn):
-            def __cvsresponse(*args, **kwargs):
+        def _csvresponse(fn):
+            def __csvresponse(*args, **kwargs):
                 response = fn(*args, **kwargs)
-                if request.content_type == 'application/excel':
+                if request.content_type == "application/excel":
                     try:
-                        lst = response.json.get('data', None)
+                        lst = response.json.get("data", None)
                         query = json.loads(request.data)
                         body = query.get("body", {})
-                        columns = body.get('excelFields', None)
+                        columns = body.get("excelFields", None)
 
                         headers = []
                         keys = []
                         for item in columns:
-                            headers.append(item['title'])
-                            keys.append(item['key'])
+                            headers.append(item["title"])
+                            keys.append(item["key"])
 
                         rows = []
                         for item in lst:
@@ -95,6 +95,6 @@ class CvsResponse(object):
 
                 return response
 
-            return __cvsresponse
+            return __csvresponse
 
-        return _cvsresponse
+        return _csvresponse
