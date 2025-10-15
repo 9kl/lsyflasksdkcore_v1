@@ -29,10 +29,15 @@ class SQLAlchemyFactory:
         self._db = value
 
     @staticmethod
-    def create_db_model():
+    def create_db_model(schema: str = None):
         """创建自定义的数据库模型基类"""
-        custom_metadata = MetaData()
+
+        if schema:
+            custom_metadata = MetaData(schema=schema)
+        else:
+            custom_metadata = MetaData()
         return declarative_base(metadata=custom_metadata)
-    
+
+
 # 单例实例
 sqlalchemy_factory = SQLAlchemyFactory()
